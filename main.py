@@ -35,6 +35,10 @@ class HuffmanTree:
         self.hCodeDic = self.generateHCodes(self.root[0][0])
     
     def generateHCodes(self, node, left=True, binStr=''):
+        #Postorder traversal of tree. Every left is a 0, every right is a 1. 
+        #The letters code is dependent on how many lefts and rights are made 
+        #Getting to its leaf. 
+        
         if type(node) is str:
             return {node: binStr}
         
