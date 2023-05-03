@@ -1,4 +1,5 @@
-from TheTree import *
+from TheTree import * 
+import copy
 
 class HuffmanTree:
     def __init__(self, root=None, hCodeDic=None, nodeList=None):
@@ -12,50 +13,66 @@ class HuffmanTree:
     def makeFreqList(self, theStr):
         tmpList = []
         self.nodeList = []
+
         for char in theStr:
             if char not in tmpList:
                 tmpList.append(char)
                 newNode = TheTree(1, char)
                 self.nodeList.append(newNode)
             else:
-                for node in nodeList:
+                for node in self.nodeList:
                     if char == node.character:
                         node.value += 1
         
-        #sort nodes in ascending order
-        self.nodeList.sort(key=lambda x: x.value)
+        #sort nodes in ascending order based on value. Leaves w same frequency must be sorted then by ascii value. 
+        self.nodeList.sort(key=lambda node: (node.value, node.character) if node.character != None else node.value)
+            
     
     def generateTree(self):
         #Start w forest of trees. Each tree has one node, weight is equal freq of char. 
         #Repeat this step until there is only one tree:
             #Chose two trees with the smallest weights, t1 and t2, create a new tree whose root
             #has equal weight to the sum of T1 + T2. Left subtree is T1, and right subtree is T2.
-        tmpFreqList = self.freqList
-        listOfNodes = []
-        while len(tmpFreqList) > 1:
-            #get smallest two character and weight from freq list
-            (char1, weight1) = tmpFreqList[0]
-            (char2, weight2) = tmpFreqList[1]
+        tmpList = self.nodeList
 
-            #pop them from freqlist
-            tmpFreqList = tmpFreqList[2:]
+        while len(tmpList) > 1:
 
+            print("\nNodes to be combined")
+            print("--------------------")
+            print("Node 1: (",tmpList[0].value,",", tmpList[0].character,") Node 2: (", tmpList[1].value,",",tmpList[1].character,")")            
+            #Get smallest two nodes from list
             #Create a new tree where root value is the sum of the two character's frequencies
-            #Roots store no characters, just the weights. 
-            leafOne = TheTree(weight1, char1)
-            leafTwo = TheTree(weight2, char2)
-            newRoot = TheTree(weight1 + weight2, None)
-            newRoot.left = leafOne
-            newRoot.right = leafTwo
+            #Roots store no characters, just the weights.
+            #Those two nodes become leaves of the new root 
 
-            #Add new tree back to the tmpFreqList
-            tmpFreqList.append((newRoot, newRoot.value))
-            listOfNodes.append(newRoot)
+            newRoot = TheTree(tmpList[0].value + tmpList[1].value, None)
+            
+            if isinstance(tmpList[0], TheTree):
+                newRoot.left = tmpList[0]
+            else:    
+                newRoot.left = TheTree(tmpList[0].value, tmpList[0].character)
+            if isinstance(tmpList[1], TheTree):
+                newRoot.right = tmpList[1]
+            else:    
+                newRoot.right = TheTree(tmpList[1].value, tmpList[1].character)
 
-            #Sort tmpFreqList in ascending order
-            tmpFreqList = sorted(tmpFreqList, key=lambda x: x[1], reverse=False)
+            #pop those nodes from the original list, add them back as the new tree
+            tmpList = tmpList[2:]
+            tmpList.append(newRoot)
+
+            tmpList.sort(key=lambda node: node.value)
+
+            print("\nRemaining single nodes: ")
+            for nodes in tmpList:
+                print(nodes.value, nodes.character)
+            print("-------")    
+
+            #Sort the list in ascending order
         
-        self.root = tmpFreqList
+        
+        #The final result should be tmpList[0] is the root node of our tree. 
+        #self.nodeList will hang onto the original frequency list. 
+        self.root = tmpList[0]
 
 
 
@@ -84,13 +101,14 @@ class HuffmanTree:
 
     def printHTree(self):
         print("Post order traversal")
-        self.BST(self.root[0])
+        #print(self.root[0].left.value, self.root[0].right.value)
+        self.BST(self.root)
+
 
     def BST(self, aNode):
-        if aNode == None:
-            return
-
-        self.BST(aNode.left)
-        self.BST(aNode.right)
-        print(aNode.value, "", aNode.character)
+        
+        if aNode:
+            self.BST(aNode.left)
+            self.BST(aNode.right)
+            print(aNode.value, "", aNode.character)
 
