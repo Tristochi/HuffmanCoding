@@ -41,8 +41,9 @@ def HuffmanEncoding(inputFile, outputFile):
     hTree.makeFreqList(msgForEncoding)
     hTree.generateTree()
     hTree.setHCodes()
-    #hTree.printHCodes()
+    hTree.printHCodes()
     #hTree.printHTree()
+    hTree.treeHeaderHelper()
     print(hTree.treeHeader)
 
 def HuffmanDecoding(inputFile, outputFile):

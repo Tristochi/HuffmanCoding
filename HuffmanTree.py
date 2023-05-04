@@ -2,11 +2,12 @@ from TheTree import *
 import copy
 
 class HuffmanTree:
-    def __init__(self, root=None, hCodeDic=None, nodeList=None, treeHeader = None):
+    def __init__(self, root=None, hCodeDic=None, nodeList=None, treeHeader = None, compressedBin = None):
         self.root = root
         self.hCodeDic = hCodeDic 
         self.nodeList = nodeList
         self.treeHeader = treeHeader
+        self.compressedBin = compressedBin
 
     def getRoot(self):
         return self.root 
@@ -88,31 +89,38 @@ class HuffmanTree:
             self.generateHCodes(left, hCode + '0')
             self.generateHCodes(right, hCode + '1')
             if node.character:
-                print(node.value, "", node.character, hCode)
+                #print(node.value, "", node.character, hCode)
                 self.hCodeDic[node.character] = hCode
 
     def treeHeaderHelper(self):
         self.treeHeader = ''
         self.encodeTreeHeader(self.root)
         #Once end of tree is reached, append final 0 to denote end of tree.
-        self.treeHeader.append('0')            
+        self.treeHeader = self.treeHeader + '0'           
 
     def encodeTreeHeader(self, node):
         if node:
             self.encodeTreeHeader(node.left)
             self.encodeTreeHeader(node.right)
             if node.character:
-                self.treeHeader.append('1' + node.character)
+                self.treeHeader = self.treeHeader + '1' + node.character
             if not node.character:
-                self.treeHeader.append('0')
+                self.treeHeader = self.treeHeader + '0'
         
     
-    def printHCodes(self):
-        print('Char | HCodes')
-        print('---------------')
+    def printHCodes(self):        
+        self.compressedBin = ''
+        # TODO: Need to format the string so that there is a space after every 8th byte. 
+        # Also, if the total string length is not divisible by 8, pad it with 0 because you need even bits
+        # for the binary file. 
         
-        for char in self.hCodeDic:
-            print(' %-4r |%12s' % (char, self.hCodeDic[char]))
+        #Get mass string
+        for key in self.hCodeDic.values():
+            self.compressedBin = self.compressedBin + key
+        #pad with 0 until all bytes are even
+
+
+        print(self.compressedBin)
 
     def printHTree(self):
         print("Post order traversal")
