@@ -2,10 +2,11 @@ from TheTree import *
 import copy
 
 class HuffmanTree:
-    def __init__(self, root=None, hCodeDic=None, nodeList=None):
+    def __init__(self, root=None, hCodeDic=None, nodeList=None, treeHeader = None):
         self.root = root
         self.hCodeDic = hCodeDic 
         self.nodeList = nodeList
+        self.treeHeader = treeHeader
 
     def getRoot(self):
         return self.root 
@@ -74,29 +75,43 @@ class HuffmanTree:
         #self.nodeList will hang onto the original frequency list. 
         self.root = tmpList[0]
 
-
-
     def setHCodes(self):
-        self.hCodeDic = self.generateHCodes(self.root[0][0])
+        self.hCodeDic = dict()
+        self.generateHCodes(self.root)    
     
-    def generateHCodes(self, node, left=True, hCode=''):
+    def generateHCodes(self, node, hCode=''):
         #Postorder traversal of tree. Every left is a 0, every right is a 1. 
         #The letters code is dependent on how many lefts and rights are made 
         #Getting to its leaf. 
+        if node != None:
+            (left, right) = node.children()
+            self.generateHCodes(left, hCode + '0')
+            self.generateHCodes(right, hCode + '1')
+            if node.character:
+                print(node.value, "", node.character, hCode)
+                self.hCodeDic[node.character] = hCode
+
+    def treeHeaderHelper(self):
+        self.treeHeader = ''
+        self.encodeTreeHeader(self.root)
+        #Once end of tree is reached, append final 0 to denote end of tree.
+        self.treeHeader.append('0')            
+
+    def encodeTreeHeader(self, node):
+        if node:
+            self.encodeTreeHeader(node.left)
+            self.encodeTreeHeader(node.right)
+            if node.character:
+                self.treeHeader.append('1' + node.character)
+            if not node.character:
+                self.treeHeader.append('0')
         
-        if type(node) is str:
-            return {node: hCode}
-        
-        (left, right) = node.children()
-        tmp = dict()
-        tmp.update(self.generateHCodes(left, True, hCode + '0'))
-        tmp.update(self.generateHCodes(right, False, hCode + '1'))
-        return tmp 
     
     def printHCodes(self):
         print('Char | HCodes')
         print('---------------')
-        for (char, weight) in self.freqList:
+        
+        for char in self.hCodeDic:
             print(' %-4r |%12s' % (char, self.hCodeDic[char]))
 
     def printHTree(self):
@@ -106,9 +121,10 @@ class HuffmanTree:
 
 
     def BST(self, aNode):
-        
         if aNode:
             self.BST(aNode.left)
             self.BST(aNode.right)
             print(aNode.value, "", aNode.character)
+
+            
 

@@ -40,9 +40,10 @@ def HuffmanEncoding(inputFile, outputFile):
     hTree = HuffmanTree()
     hTree.makeFreqList(msgForEncoding)
     hTree.generateTree()
-    #hTree.setHCodes()
+    hTree.setHCodes()
     #hTree.printHCodes()
-    hTree.printHTree()
+    #hTree.printHTree()
+    print(hTree.treeHeader)
 
 def HuffmanDecoding(inputFile, outputFile):
     print("Decode ", inputFile, " and output msg to ", outputFile)
