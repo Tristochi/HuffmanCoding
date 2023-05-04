@@ -2,12 +2,12 @@ from TheTree import *
 import copy
 
 class HuffmanTree:
-    def __init__(self, root=None, hCodeDic=None, nodeList=None, treeHeader = None, compressedBin = None):
+    def __init__(self, root=None, hCodeDic=None, nodeList=None, treeHeader = None, binStr = None):
         self.root = root
         self.hCodeDic = hCodeDic 
         self.nodeList = nodeList
         self.treeHeader = treeHeader
-        self.compressedBin = compressedBin
+        self.binStr = binStr
 
     def getRoot(self):
         return self.root 
@@ -107,20 +107,33 @@ class HuffmanTree:
             if not node.character:
                 self.treeHeader = self.treeHeader + '0'
         
-    
-    def printHCodes(self):        
-        self.compressedBin = ''
-        # TODO: Need to format the string so that there is a space after every 8th byte. 
-        # Also, if the total string length is not divisible by 8, pad it with 0 because you need even bits
-        # for the binary file. 
-        
-        #Get mass string
-        for key in self.hCodeDic.values():
-            self.compressedBin = self.compressedBin + key
+    def getEncodedStr(self):
+        binStr = ""
+        for key in self.hCodeDic:
+            binStr += key 
+        return binStr 
+
+    def getPaddedStr(self, encodedStr):        
         #pad with 0 until all bytes are even
+        print(len(self.binStr))
+        padding = 8-len(encodedStr) % 8
+        for i in range(padding):
+            encodedStr += '0'
 
-
-        print(self.compressedBin)
+        paddedStr = "{0:08b}".format(padding)
+        encodedStr = paddedStr + encodedStr 
+        print(encodedStr)
+        return encodedStr         
+    
+    def getByteArray(self, finalEncodedStr):
+        b = bytearray()
+        for i in range(0, len(finalEncodedStr), 8):
+            byte = finalEncodedStr[i:i+8]
+            #Converts 8bit string into an actual byte
+            b.append(int(byte, 2))
+        return b 
+            
+        
 
     def printHTree(self):
         print("Post order traversal")

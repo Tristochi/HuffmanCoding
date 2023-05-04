@@ -41,10 +41,16 @@ def HuffmanEncoding(inputFile, outputFile):
     hTree.makeFreqList(msgForEncoding)
     hTree.generateTree()
     hTree.setHCodes()
-    hTree.printHCodes()
-    #hTree.printHTree()
-    hTree.treeHeaderHelper()
-    print(hTree.treeHeader)
+    encodedStr = hTree.getEncodedStr()
+    paddedStr = hTree.getPaddedStr(encodedStr)
+    byteArr = hTree.getByteArray(paddedStr)
+
+    #Output to binary (.bin) file
+    outputDest = open(outputFile, 'wb')
+    outputDest.write(bytes(byteArr))
+
+    #hTree.treeHeaderHelper()
+    #print(hTree.treeHeader)
 
 def HuffmanDecoding(inputFile, outputFile):
     print("Decode ", inputFile, " and output msg to ", outputFile)
