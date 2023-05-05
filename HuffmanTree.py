@@ -2,12 +2,13 @@ from TheTree import *
 import copy
 
 class HuffmanTree:
-    def __init__(self, root=None, hCodeDic=None, nodeList=None, treeHeader = None, binStr = None):
+    def __init__(self, root=None, hCodeDic=None, nodeList=None, treeHeader = None, binStr = None, verbose = False):
         self.root = root
         self.hCodeDic = hCodeDic 
         self.nodeList = nodeList
         self.treeHeader = treeHeader
         self.binStr = binStr
+        self.verbose = verbose 
 
     def getRoot(self):
         return self.root 
@@ -38,10 +39,10 @@ class HuffmanTree:
         tmpList = self.nodeList
 
         while len(tmpList) > 1:
-
-            print("\nNodes to be combined")
-            print("--------------------")
-            print("Node 1: (",tmpList[0].value,",", tmpList[0].character,") Node 2: (", tmpList[1].value,",",tmpList[1].character,")")            
+            if self.verbose:
+                print("\nNodes to be combined")
+                print("--------------------")
+                print("Node 1: (",tmpList[0].value,",", tmpList[0].character,") Node 2: (", tmpList[1].value,",",tmpList[1].character,")")            
             #Get smallest two nodes from list
             #Create a new tree where root value is the sum of the two character's frequencies
             #Roots store no characters, just the weights.
@@ -64,10 +65,11 @@ class HuffmanTree:
 
             tmpList.sort(key=lambda node: node.value)
 
-            print("\nRemaining single nodes: ")
-            for nodes in tmpList:
-                print(nodes.value, nodes.character)
-            print("-------")    
+            if self.verbose:
+                print("\nRemaining single nodes: ")
+                for nodes in tmpList:
+                    print(nodes.value, nodes.character)
+                print("-------")    
 
             #Sort the list in ascending order
         
@@ -92,37 +94,56 @@ class HuffmanTree:
                 #print(node.value, "", node.character, hCode)
                 self.hCodeDic[node.character] = hCode
 
-    def treeHeaderHelper(self):
+    def breakDownTree(self):
         self.treeHeader = ''
-        self.encodeTreeHeader(self.root)
+        self.encodeTreeData(self.root)
         #Once end of tree is reached, append final 0 to denote end of tree.
-        self.treeHeader = self.treeHeader + '0'           
+        self.treeHeader = self.treeHeader + '0'
+        #print(self.treeHeader)           
 
-    def encodeTreeHeader(self, node):
+    def encodeTreeData(self, node):
         if node:
-            self.encodeTreeHeader(node.left)
-            self.encodeTreeHeader(node.right)
+            self.encodeTreeData(node.left)
+            self.encodeTreeData(node.right)
             if node.character:
                 self.treeHeader = self.treeHeader + '1' + node.character
             if not node.character:
                 self.treeHeader = self.treeHeader + '0'
+
+    #Ref code taken from https://www.geeksforgeeks.org/python-program-to-convert-ascii-to-binary/#
+    def strToBin(self, str):
+        return [bin(ord(i))[2:].zfill(8) for i in str]
+    
+    def binToStr(self, bits):
+        return ''.join([chr(int(i,2)) for i in bits])
+
+    def getTreeHeaderBin(self):
+        treeBin = ""
+        for char in self.treeHeader:
+            if char == '0' or char == '1':
+                treeBin += char 
+            else:
+                tmp = self.strToBin(char)
+                treeBin += str(tmp[0])
+            
+        return treeBin
         
     def getEncodedStr(self):
         binStr = ""
-        for key in self.hCodeDic:
-            binStr += key 
+        #Grab the HCodes for our letters from our dictionary/table
+        for value in self.hCodeDic.values():
+            binStr += value 
         return binStr 
 
     def getPaddedStr(self, encodedStr):        
         #pad with 0 until all bytes are even
-        print(len(self.binStr))
-        padding = 8-len(encodedStr) % 8
+        padding = 8 - len(encodedStr) % 8
         for i in range(padding):
             encodedStr += '0'
 
         paddedStr = "{0:08b}".format(padding)
         encodedStr = paddedStr + encodedStr 
-        print(encodedStr)
+        
         return encodedStr         
     
     def getByteArray(self, finalEncodedStr):
@@ -131,9 +152,51 @@ class HuffmanTree:
             byte = finalEncodedStr[i:i+8]
             #Converts 8bit string into an actual byte
             b.append(int(byte, 2))
-        return b 
-            
-        
+        return b         
+    
+    def stripPadding(self, bitStr):
+        #Get last byte that has padding
+        paddedStr = bitStr[:8]
+        padding = int(paddedStr, 2)
+
+        #Remove padded info
+        bitStr = bitStr[8:]
+        #Get original encoded str by removing padded ending
+        encodedStr = bitStr[:-1*padding]
+        return encodedStr
+    
+    def decodeTreeHeader(self, encodedStr):
+        #We need to go through each bit. if first bit is a 1, following byte will be an ascii
+        #code for a character. If we get a 0, that represents a parent node, so no ascii will follow it.
+
+        treeHeader = ""
+        asciiStr = []
+        i = 0
+        #print("The len of encodedStr is " + str(len(encodedStr)))
+        while i < len(encodedStr):
+            #print("Current index is being checked is " + str(i))
+            #If the bit is a 0, append it and move on with our lives 
+            if encodedStr[i] == '0':
+                treeHeader += encodedStr[i]
+                i += 1
+            elif encodedStr[i] == '1':
+                treeHeader += encodedStr[i]
+                #Next 8 bits should are one ascii code
+                asciiStr.append(encodedStr[i+1:i+9])
+                
+                if self.verbose:
+                    print(asciiStr[0], '\n')
+                    
+                #Decode the ascii and append to treeHeader
+                val = self.binToStr(asciiStr)
+                if self.verbose: 
+                    print("The character was: " + val)
+                treeHeader += val 
+
+                #Reset asciiStr to empty
+                asciiStr = []
+                i = i+9
+        return treeHeader
 
     def printHTree(self):
         print("Post order traversal")
