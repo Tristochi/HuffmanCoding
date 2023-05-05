@@ -1,5 +1,4 @@
 from TheTree import * 
-import copy
 
 class HuffmanTree:
     def __init__(self, root=None, hCodeDic=None, nodeList=None, treeHeader = None, binStr = None, verbose = False):
@@ -9,6 +8,9 @@ class HuffmanTree:
         self.treeHeader = treeHeader
         self.binStr = binStr
         self.verbose = verbose 
+
+    def setVerbose(self, bool):
+        self.verbose = bool 
 
     def getRoot(self):
         return self.root 
@@ -109,7 +111,9 @@ class HuffmanTree:
         self.encodeTreeData(self.root)
         #Once end of tree is reached, append final 0 to denote end of tree.
         self.treeHeader = self.treeHeader + '0'
-        #print(self.treeHeader)           
+        if self.verbose:
+            print("\nTree header data: ")
+            print(self.treeHeader)           
 
     def encodeTreeData(self, node):
         if node:
@@ -172,7 +176,9 @@ class HuffmanTree:
     def decodeTreeHeader(self, encodedStr):
         #We need to go through each bit. if first bit is a 1, following byte will be an ascii
         #code for a character. If we get a 0, that represents a parent node, so no ascii will follow it.
-
+        if self.verbose:
+            print("\nDecoding tree header...")
+            
         treeHeader = ""
         asciiStr = []
         i = 0
@@ -187,14 +193,11 @@ class HuffmanTree:
                 treeHeader += encodedStr[i]
                 #Next 8 bits should are one ascii code
                 asciiStr.append(encodedStr[i+1:i+9])
-                
-                if self.verbose:
-                    print(asciiStr[0], '\n')
 
                 #Decode the ascii and append to treeHeader
                 val = self.binToStr(asciiStr)
                 if self.verbose: 
-                    print("The character was: " + val)
+                    print("The character for", asciiStr[0], "is: " + val)
                 treeHeader += val 
 
                 #Reset asciiStr to empty
