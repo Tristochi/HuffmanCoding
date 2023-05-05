@@ -43,7 +43,7 @@ def HuffmanEncoding(inputFile, outputFile):
     hTree.setHCodes()
 
     #Grab the compiled string of HuffmanCodes representing the chars of our msg
-    encodedStr = hTree.getEncodedStr()
+    encodedStr = hTree.getEncodedStr(msgForEncoding)
     #The compiled string will not necessarily be even in terms of 8 bit bytes, so we pad the rest.
     paddedStr = hTree.getPaddedStr(encodedStr)
     #Take that padded string and turn it into a byte array to be written to the file. 
@@ -73,7 +73,7 @@ def HuffmanEncoding(inputFile, outputFile):
     
 
 def HuffmanDecoding(inputFile, outputFile):
-    print("Decompressing ", inputFile, " and writing msg to ", outputFile)
+    print("Decompressing", inputFile, "and writing msg to", outputFile)
 
     encodedMsg = open(inputFile, 'rb')
 
@@ -104,13 +104,32 @@ def HuffmanDecoding(inputFile, outputFile):
             treeHeadBin = bitStr[:i+1]
             hCodeBin = bitStr[i+1:]
     
+    treeHeadBin = treeHeadBin[:-1]
+    #print(treeHeadBin)
     treeHeadBin = "".join(treeHeadBin)
     hCodeBin = "".join(hCodeBin)
 
+    print("Binary file decompressed... Reconstructing HuffmanTree")
+
     #Now we need to reconstruct the tree from the treeHeadBin info.
+    hTree = HuffmanTree()
+    #hTree.verbose = True
+    #unpad the treeHeadBin
+    strippedTreeHeadBin = hTree.stripPadding(treeHeadBin)
+    treeHeader = hTree.decodeTreeHeader(strippedTreeHeadBin)
+    treeHeader = treeHeader[:-1]
+    hTree.recreateHTree(treeHeader)
 
+    #Now with the tree constructed we can recreate the HCodeDic to decode the message:
+    hTree.setHCodes()
+    stripHCodeBin = hTree.stripPadding(hCodeBin)
 
-    
+    print("Decoding message using HCodes.")
+    decodedMsg = hTree.decodeMsg(stripHCodeBin)
+
+    outputDest = open(outputFile, 'w')
+    outputDest.write(decodedMsg)
+    print("Output file created.")
 
 if __name__ == "__main__":
     argument_handling()

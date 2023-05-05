@@ -82,6 +82,16 @@ class HuffmanTree:
         self.hCodeDic = dict()
         self.generateHCodes(self.root)    
     
+    def getEncodedStr(self, msgToEncode):
+        binStr = ""
+
+        for char in msgToEncode:
+            if char in self.hCodeDic:
+                binStr += self.hCodeDic[char]
+
+        return binStr            
+                
+
     def generateHCodes(self, node, hCode=''):
         #Postorder traversal of tree. Every left is a 0, every right is a 1. 
         #The letters code is dependent on how many lefts and rights are made 
@@ -128,12 +138,6 @@ class HuffmanTree:
             
         return treeBin
         
-    def getEncodedStr(self):
-        binStr = ""
-        #Grab the HCodes for our letters from our dictionary/table
-        for value in self.hCodeDic.values():
-            binStr += value 
-        return binStr 
 
     def getPaddedStr(self, encodedStr):        
         #pad with 0 until all bytes are even
@@ -186,7 +190,7 @@ class HuffmanTree:
                 
                 if self.verbose:
                     print(asciiStr[0], '\n')
-                    
+
                 #Decode the ascii and append to treeHeader
                 val = self.binToStr(asciiStr)
                 if self.verbose: 
@@ -197,6 +201,44 @@ class HuffmanTree:
                 asciiStr = []
                 i = i+9
         return treeHeader
+    
+    def recreateHTree(self, treeHeader):
+        #Create a stack. If we read a 1, push following char onto stack. 
+        #If we read a 0, create a node, pop top char off and make it right child.
+            #pop second char and make it left child. 
+            #push new tree onto the stack. 
+        #Once there is only one node on the stack, we have recreated the tree. 
+        stack = []
+        for i in range(len(treeHeader)):
+            if treeHeader[i] == '1':
+                stack.append(treeHeader[i+1])
+            if treeHeader[i] == '0':
+                node = TheTree(treeHeader[i], None)
+                rChild = stack.pop()
+                lChild = stack.pop()
+                if not isinstance(rChild, TheTree):
+                    rChild = TheTree(None, rChild)
+                if not isinstance(lChild, TheTree):
+                    lChild = TheTree(None, lChild)
+                
+                node.right = rChild
+                node.left = lChild 
+                stack.append(node)
+        
+        #print(stack[0])
+        self.root = stack[0]
+
+    def decodeMsg(self, msgToDecode):
+        tmp = ""
+        decodedStr = ""
+
+        for bit in msgToDecode:
+            tmp += bit 
+            for key, value in self.hCodeDic.items():
+                if tmp == value:
+                    decodedStr += key 
+                    tmp = ""
+        return decodedStr 
 
     def printHTree(self):
         print("Post order traversal")
